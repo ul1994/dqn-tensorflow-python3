@@ -1,5 +1,6 @@
 class AgentConfig(object):
   scale = 10000
+  # scale = 100
   display = False
 
   max_step = 5000 * scale
@@ -29,8 +30,9 @@ class AgentConfig(object):
   double_q = False
   dueling = False
 
-  _test_step = 5 * scale
-  _save_step = _test_step * 10
+  _test_step = 1 * scale
+  # _save_step = _test_step * 1
+  _save_step = _test_step * 5
 
 class EnvironmentConfig(object):
   env_name = 'Breakout-v0'
@@ -55,9 +57,14 @@ def get_config(FLAGS):
   elif FLAGS.model == 'm2':
     config = M2
 
-  if FLAGS.use_gpu:
-    config.cnn_format = 'NHWC'
-  else:
-    config.cnn_format = 'NCHW'
+  for k, v in FLAGS.__flags.items():
+    if k == 'gpu':
+      if v.value == False:
+        config.cnn_format = 'NHWC'
+      else:
+        config.cnn_format = 'NCHW'
+
+    if hasattr(config, k):
+      setattr(config, k, v.value)
 
   return config
