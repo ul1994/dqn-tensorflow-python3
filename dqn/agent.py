@@ -372,7 +372,7 @@ class Agent(BaseModel):
 
     if not self.display:
       gym_dir = '/tmp/%s-%s' % (self.env_name, get_time())
-      self.env = gym.wrappers.Monitor(self.env, gym_dir)
+      self.monitor = gym.wrappers.Monitor(self.env.env, gym_dir)
 
     best_reward, best_idx = 0, 0
     for idx in range(n_episode):

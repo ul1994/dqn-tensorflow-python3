@@ -8,6 +8,7 @@ https://github.com/carpedm20/deep-rl-tensorflow
 1. Misbehaving configs `FLAGS.__flags.items` in config.py
 2. xrange, reduce in model definition
 3. CUDNN crashing during training
+4. Monitor crash from resetting `self.env` in dqn/agent.py
 
 # Human-Level Control through Deep Reinforcement Learning
 
