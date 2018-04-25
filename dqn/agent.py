@@ -13,6 +13,8 @@ from .ops import linear, conv2d, clipped_error
 from .utils import get_time, save_pkl, load_pkl
 import tensorflow as tf
 import functools
+import scipy.misc
+import h5py
 
 class Agent(BaseModel):
   def __init__(self, config, environment, sess):
@@ -365,6 +367,24 @@ class Agent(BaseModel):
       self.writer.add_summary(summary_str, self.step)
 
   def play(self, n_step=10000, n_episode=100, test_ep=None, render=False):
+    # database
+    save_ind = False
+    SAVESIZE = 64
+    DATAROOT = '/media/ul1994/ssd1tb/freeway'
+    dbhandle = h5py.File(DATAROOT + '/frames.h5', 'w')
+    framedb = dbhandle.create_dataset(
+      'frames',
+      (SAVESIZE, 210, 160, 3),
+      maxshape=(None, 210, 160, 3),
+      dtype='uint8',
+      compression='gzip')
+    actiondb = dbhandle.create_dataset(
+      'actions',
+      (SAVESIZE,),
+      maxshape=(None,),
+      dtype='uint8',
+      compression='gzip')
+
     if test_ep == None:
       test_ep = self.ep_end
 
@@ -382,17 +402,47 @@ class Agent(BaseModel):
       for _ in range(self.history_length):
         test_history.add(screen)
 
+      # database
+      frame_ind = 0
+      frame_buffer = np.zeros((SAVESIZE, 210, 160, 3), dtype=np.uint8)
+      action_buffer = -np.ones(SAVESIZE, dtype=np.uint8)
       for t in tqdm(range(n_step), ncols=70):
         # 1. predict
         action = self.predict(test_history.get(), test_ep)
+
+        # 2-0. save frame
+        # if not self.config.is_train:
+        if True:
+          # database
+          assert action >= 0 and action < 3
+          if len(frame_buffer) < SAVESIZE:
+            # keep frame
+            frame = self.env.env.render('rgb_array')
+            frame_buffer[frame_ind] = frame
+            action_buffer[frame_ind] = action
+          elif len(frame_buffer) == SAVESIZE:
+            # dump data
+            # print('Save!')
+            framedb[save_ind*SAVESIZE:, :, :, :] = frame_buffer
+            actiondb[save_ind*SAVESIZE:] = action_buffer
+            if save_ind > 0:
+              framedb.resize((save_ind + 1) * SAVESIZE, axis=0)
+              actiondb.resize((save_ind + 1) * SAVESIZE, axis=0)
+            save_ind += 1
+          else:
+            raise Exception('')
+
         # 2. act
         screen, reward, terminal = self.env.act(action, is_training=False)
+
         # 3. observe
         test_history.add(screen)
 
+        frame_ind += 1
         current_reward += reward
         if terminal:
           break
+
 
       if current_reward > best_reward:
         best_reward = current_reward

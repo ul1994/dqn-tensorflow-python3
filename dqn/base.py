@@ -52,7 +52,9 @@ class BaseModel(object):
 
   @property
   def checkpoint_dir(self):
-    return os.path.join('checkpoints', self.model_dir)
+    # return os.path.join('checkpoints', self.model_dir)
+    # return os.path.join('checkpoints', self.model_dir)
+    return 'checkpoints/Freeway-v0/max_delta-1/discount-0.99/min_delta--1/train_frequency-4/screen_width-84/screen_height-84/double_q-False/history_length-4/learning_rate_minimum-0.00025/ep_end-0.1/action_repeat-4/learning_rate_decay-0.96/learning_rate-0.00025/dueling-False/min_reward--1.0/batch_size-32/ep_end_t-1000000/backend-tf/random_start-30/target_q_update_step-10000/env_name-Freeway-v0/learning_rate_decay_step-50000/model-m1/env_type-detail/learn_start-50000.0/max_step-50000000/scale-10000/ep_start-1.0/max_reward-1.0/memory_size-1000000/cnn_format-NCHW/'
 
   @property
   def model_dir(self):
