@@ -403,9 +403,8 @@ class Agent(BaseModel):
         test_history.add(screen)
 
       # database
-      frame_ind = 0
-      frame_buffer = np.zeros((SAVESIZE, 210, 160, 3), dtype=np.uint8)
-      action_buffer = -np.ones(SAVESIZE, dtype=np.uint8)
+      frame_buffer = []
+      action_buffer = []
       for t in tqdm(range(n_step), ncols=70):
         # 1. predict
         action = self.predict(test_history.get(), test_ep)
@@ -418,19 +417,20 @@ class Agent(BaseModel):
           if len(frame_buffer) < SAVESIZE:
             # keep frame
             frame = self.env.env.render('rgb_array')
-            frame_buffer[frame_ind] = frame
-            action_buffer[frame_ind] = action
+            frame_buffer.append(frame)
+            action_buffer.append(action)
           elif len(frame_buffer) == SAVESIZE:
             # dump data
-            # print('Save!')
-            framedb[save_ind*SAVESIZE:, :, :, :] = frame_buffer
-            actiondb[save_ind*SAVESIZE:] = action_buffer
             if save_ind > 0:
               framedb.resize((save_ind + 1) * SAVESIZE, axis=0)
               actiondb.resize((save_ind + 1) * SAVESIZE, axis=0)
+            framedb[save_ind*SAVESIZE:, :, :, :] = frame_buffer
+            actiondb[save_ind*SAVESIZE:] = action_buffer
             save_ind += 1
+            frame_buffer = []
+            action_buffer = []
           else:
-            raise Exception('')
+            raise Exception('Buffer OOB')
 
         # 2. act
         screen, reward, terminal = self.env.act(action, is_training=False)
@@ -438,7 +438,6 @@ class Agent(BaseModel):
         # 3. observe
         test_history.add(screen)
 
-        frame_ind += 1
         current_reward += reward
         if terminal:
           break
