@@ -1,3 +1,14 @@
+
+## Original Project
+
+https://github.com/carpedm20/deep-rl-tensorflow
+
+## Issues Fixed
+
+1. Misbehaving configs `FLAGS.__flags.items` in config.py
+2. xrange, reduce in model definition
+3. CUDNN crashing during training
+
 # Human-Level Control through Deep Reinforcement Learning
 
 Tensorflow implementation of [Human-Level Control through Deep Reinforcement Learning](http://home.uchicago.edu/~arij/journalclub/papers/2015_Mnih_et_al.pdf).
